@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Workspace
+   version = "1.0">
+   <FileRef
+      location = "group:header.hpp">
+   </FileRef>
+   <FileRef
+      location = "group:tauchen.cpp">
+   </FileRef>
+   <FileRef
+      location = "group:useful.cpp">
+   </FileRef>
+   <FileRef
+      location = "group:main.cpp">
+   </FileRef>
+   <FileRef
+      location = "group:POLICY.cpp">
+   </FileRef>
+   <FileRef
+      location = "group:compile.command">
+   </FileRef>
+   <FileRef
+      location = "group:SIMULATION.cpp">
+   </FileRef>
+</Workspace>
