@@ -70,14 +70,10 @@ void SIMULATION(double *save, double *startdist, double *enddist, double *capita
 
 
         // copy distin in distold //
-        bascule(distin,distold,ifulldim);
-        
-        for(i=0;i<ifulldim;i++)
-        {
-            distin[i]=0.0;
-        }
+        bascule_zero(distin,distold,ifulldim);
 		
         // Compute new distribution //
+        #pragma omp parallel for reduction(+:distin[:ifulldim]) private(y,i,k)
 		for(y=0;y<maxygrid;y++)
 		{
 			for(i=0;i<maxigrid;i++)
@@ -90,16 +86,16 @@ void SIMULATION(double *save, double *startdist, double *enddist, double *capita
 			}
 		}
 
+
         // convergence criterion //
-		critdist=0.0;
-        distverif = 0.0;
+        critdist=0.0;
         for(i=0;i<maxigrid;i++)
         {
             for(y=0;y<maxygrid;y++)
             {
-                critdist=(max(critdist,fabs(distin[inx(i,y)]-(distold[inx(i,y)]))));
+                critdist = max(critdist,fabs(distin[inx(i,y)]-(distold[inx(i,y)])));
             }
-		}
+        }
         
 	}
 

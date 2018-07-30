@@ -14,6 +14,9 @@
       location = "group:SIMULATION.cpp">
    </FileRef>
    <FileRef
+      location = "group:useful.cpp">
+   </FileRef>
+   <FileRef
       location = "group:main.cpp">
    </FileRef>
 </Workspace>

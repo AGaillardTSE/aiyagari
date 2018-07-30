@@ -1,17 +1,18 @@
-/*********************/
-/** Useful function **/
-/*********************/
+/*************************************************************/
+/**            USEFUL MATHEMATICAL FUNCTIONS                **/
+/**          ©Copyright 2018 Alexandre GAILLARD             **/
+/*************************************************************/
 
 
-
+/** MATHEMATICAL FUNCTIONS **/
 #define max(a,b) (((a)>(b))?(a):(b))
 #define min(a,b) (((a)<(b))?(a):(b))
 #define interpol(x,y,z) (y+(x-floor(x))*(z-y))
-#define inter1d(x1,y1,y2) ((1.0-(x1))*(y1)+(x1)*(y2))
 #define inter2d(x1,x2,y11,y21,y12,y22) ((1.0-(x2))*((1.0-(x1))*(y11)+(x1)*(y21))+(x2)*((1.0-(x1))*(y12)+(x1)*(y22)))
+inline double inter1d(double x1,double y1,double y2){return(((1.0-(x1))*(y1)+(x1)*(y2)));}
 
 
-// TO DEFINE GRID SPACING //
+/** GRID SPACING **/
 #define linspace(x0,xmax,n,i) ((i)*(((xmax)-(x0))/(n))+(x0)) // transform a grid into a value
 #define invlinspace(x0,xmax,n,x) ((((x)-(x0))/((xmax)-(x0)))*(n)) // transform a value into a grid
 #define expspace(i,xmin,xmax,echelle,n) ( echelle*(exp((log((xmax/echelle)-((xmin/echelle)-1.0))/(n-1))*(i))+((xmin/echelle)-1.0)) ) // transform a grid into a value
@@ -21,9 +22,11 @@
 #define invfungrid(x,xmin1,xmax1,xmin2,xmax2,echelle,n1,n2) ((x)<=(xmax1))?(log((x)/echelle - ((xmin1/echelle)-1.0))/(log((xmax1/echelle)-((xmin1/echelle)-1.0))/(n1-1))):((((x)-(xmin2))/((xmax2)-(xmin2)))*(n2)+n1-1)
 
 
+/** COMPUTE DERIVATIVE **/
+#define deriv(val1,val2,val3,x1,x2,x3) ((1.0 - (x3 - x2)/(x3 - x1))*((val3 - val2)/(x3-x2)) + ((x3 - x2)/(x3 - x1))*((val2 - val1)/(x2-x1)))
 
 
-// QUADRATIC INTERPOLATION //
+/** QUADRATIC INTERPOLATION **/
 double interQuad1d(const double dx, const double h0, const double h1, const double h2) // dx lies in the interval [i-0.5; i+0.5] (distance is equal to 1), we fake f(i-0.5);
 {
 double h05, h15, a, b, c, fapprox;
@@ -43,7 +46,7 @@ return fapprox;
 
 
 
-// TRILINEAR INTERPOLATION // (source: wikipedia)
+/** TRILINEAR INTERPOLATION **/
 double inter3d(const double dx, const double dy, const double dz, const double c000, const double c001, const double c010, const double c011, const double c100, const double c101, const double c110, const double c111)
 {
     double c00, c01, c10, c11, c0, c1, c;
@@ -63,84 +66,8 @@ double inter3d(const double dx, const double dy, const double dz, const double c
 
 
 
-/*// FIND THE WEIGHT FOR QUADRATIC INTERPOLATION //
-double weightQuad(double x, double xgrid, int *ixgrid, int *ixgridm1, int *ixgridp1, double vector[], int dimweight)
-{
-    double dxgrid, vector05, vector15;
-    int caseW;
-    
-    caseW = 0;
-    
-    // PUT THESE VALUE ON A GRID //
-    *ixgrid=min((dimweight-1),(int)(floor(xgrid)));
-    
-    if((xgrid-*ixgrid) >= 0.5) { // also get rid of the case where xgrid > 0.5 when xgrid > dimweight.
-        *ixgrid = *ixgrid + 1;
-    }
-    
-    *ixgrid=max(0,*ixgrid);
-    
-    //printf("%f %f %d \n", x, xgrid, *ixgrid);getchar();
-    
-    if (*ixgrid>=(dimweight-1))
-    {
-        xgrid=(dimweight-1)-0.000000001;
-        *ixgrid=dimweight-2;
-        caseW = 1;
-    }
-    
-    if (*ixgrid<=0)
-    {
-        xgrid=0.000000001;
-        *ixgrid=0;
-        caseW = 2;
-    }
-    
-    if(x < 0.0){
-        x = 0.0;
-    }
-    
-    //printf("%f %f %d \n", x, xgrid, *ixgrid);getchar();
-    
-    // interior case //
-    if(caseW == 0) {
-        vector05 = phi(*ixgrid-0.5);
-        vector15 = phi(*ixgrid+0.5);
-        *ixgridm1 = *ixgrid-1;
-        *ixgridp1 = *ixgrid+1;
-        dxgrid=(x-vector05)/(vector15-vector05);
-    }
-    
-    // max case //
-    if(caseW == 1) { // do linear interpolation in that case. (sufficient to contrat that ixgrid = dimweight-2).
-        *ixgridm1 = *ixgrid;
-        *ixgridp1 = *ixgrid+1;
-        dxgrid=(x-vector[*ixgrid])/(vector[*ixgrid+1]-vector[*ixgrid]);
-    }
-    
-    // min case //
-    if(caseW == 2) {  // do linear interpolation in that case (sufficient to control that ixgrid == 0)
-        *ixgridm1 = *ixgrid;
-        *ixgridp1 = *ixgrid+1;
-        dxgrid=(x-vector[*ixgrid])/(vector[*ixgrid+1]-vector[*ixgrid]);
-    }
-    
-    
-    if(dxgrid < 0.0) {
-        printf("%f %f %d %d %d %f %f \n", vector15, vector05, *ixgrid, *ixgridm1, *ixgridp1, x, dxgrid);getchar();
-    }
-    // if i is in [0.5;dimweight-2 + 0.5], this is ok
-    // if i is in [-0.5; 0.5], then replace -0.5 by 0, and xgrid by 0.00001
-    // if i is in [dimweight-2 + 0.5; dimweight-1+0.5], then replace dimweight-1+0.5 by dimweight and xgrid by (dimweight-1)-0.000001;
-    
-    
-    return dxgrid;
-}
-*/
 
-
-
-// FIND THE WEIGHT FOR INTERPOLATION //
+/**  FIND THE WEIGHT FOR INTERPOLATION **/
 double weightinter(double x, double xgrid, int *ixgrid, double vector[], int dimweight)
 {
     double dxgrid;
@@ -172,7 +99,7 @@ double weightinter(double x, double xgrid, int *ixgrid, double vector[], int dim
 
 
 
-// FOR QSORT
+/** COMPARE VECTORS **/
 int comparefun2(const void* a, const void* b) 
 { 
 	double* da = (double*)a; 
@@ -185,35 +112,31 @@ int comparefun2(const void* a, const void* b)
 
 
 
-// SHIFTER //
-
-namespace {
-	inline void shft2(double &a, double &b, const double c)
-	{
-		a=b;
-		b=c;
-	}
-    
-	inline void shft3(double &a, double &b, double &c, const double d)
-	{
-		a=b;
-		b=c;
-		c=d;
-	}
-}
-
-using namespace std;
+/** SHIFTER **/
+void inline shft2(double &a, double &b, const double c){a=b;b=c;}
+void inline shft3(double &a, double &b, double &c, const double d){a=b;b=c;c=d;}
 
 
+
+/** BASCULE FUNCTIONS **/
 void bascule(double *VectorIN, double *VectorOUT, int dim)
 {
     int i;
     for(i=0; i<dim; i++){VectorOUT[i]=VectorIN[i];}
 }
 
+void bascule_zero(double *VectorIN, double *VectorOUT, int dim)
+{
+    int i;
+    for(i=0; i<dim; i++){
+        VectorOUT[i]=VectorIN[i];
+        VectorIN[i] = 0.0;
+    }
+}
 
 
-// GET RESIDUALS OF THE HISTOGRAM //
+
+/** GET RESIDUALS OF THE HISTOGRAM **/
 void weighthist(double x, double xgrid, double *residout, int *ixgrid, double vector[], int dimweight)
 {
     
@@ -241,7 +164,7 @@ void weighthist(double x, double xgrid, double *residout, int *ixgrid, double ve
 
 
 
-// INVARIANT DISTRIBUTION //
+/** INVARIANT DISTRIBUTION **/
 template<size_t dim, size_t dim2>
 void inv_distri(double (&invdist)[dim], double (&prob)[dim][dim2])
 {
